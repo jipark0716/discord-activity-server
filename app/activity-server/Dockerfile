@@ -25,4 +25,4 @@ EXPOSE 8510
 
 ENTRYPOINT ["/app"]
 
-# docker build --push --progress=plain -t parkjungin/discord-activity-server:1.0.0 -f dev -f app/activity-server/Dockerfile .Docker
+# docker build --push --progress=plain -t parkjungin/discord-activity-server:1.0.0 -f dev -f app/activity-server/Dockerfile .

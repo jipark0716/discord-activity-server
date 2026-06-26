@@ -8,10 +8,12 @@ tokio = { version = "1", features = ["full"] }
 anyhow = "1"
 tonic = "0.14.6"
 tonic-prost = "0.14.6"
+tonic-web = "0.14"
 prost = "0.14"
 discord-auth = { path = "../../service/discord-auth" }
 tracing = "0.1.44"
 tracing-subscriber = "0"
+tower-http = { version = "0.6", features = ["cors"] }
 
 [build-dependencies]
 prost-build = "0.14"
