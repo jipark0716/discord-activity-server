@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package app.v1;
+
+service AuthService {
+  rpc GetToken(AuthRequest) returns (AuthResponse);
+}
+
+message AuthRequest {
+  string code = 1;
+}
+
+message AuthResponse {
+  string access_token = 1;
+  string token_type = 2;
+  uint64 expires_in = 3;
+  string refresh_token = 4;
+  string scope = 5;
+}
