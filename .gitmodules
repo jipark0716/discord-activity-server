@@ -1,0 +1,3 @@
+[submodule "app/activity-server/proto"]
+	path = app/activity-server/proto
+	url = git@github.com:jipark0716/discord-activity-client
