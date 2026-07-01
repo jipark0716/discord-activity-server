@@ -16,6 +16,25 @@ pub struct DiscordTokenResponse {
     pub scope: String,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct DiscordUserResponse {
+    pub id: u64,
+    pub username: String,
+    pub avatar: String,
+}
+
+impl DiscordUserResponse {
+    pub fn profile(&self, size: u16) -> String {
+        let Self {
+            id,
+            avatar,
+            ..
+        } = self;
+
+        format!("https://cdn.discordapp.com/avatars/{id}/{avatar}.webp?size={size}")
+    }
+}
+
 impl DiscordClient {
     pub fn new(client_id: String, client_secret: String) -> anyhow::Result<Self> {
         let http = reqwest::Client::builder()
@@ -52,6 +71,34 @@ impl DiscordClient {
                 status = %status,
                 body = %body,
                 "Discord authorization failed"
+            );
+
+            anyhow::bail!("Discord authorization failed: {status}");
+        }
+
+        Ok(response.json().await?)
+    }
+
+    pub async fn get_current_user(&self, access_token: &str) -> anyhow::Result<DiscordUserResponse> {
+        let mut headers = reqwest::header::HeaderMap::new();
+
+        headers.insert("Authorization", format!("Bearer {access_token}").parse()?);
+
+        let response = self.http
+          .request(reqwest::Method::GET, "https://discord.com/api/v10/users/@me")
+          .headers(headers)
+          .send()
+          .await?;
+
+        let status = response.status();
+
+        if !status.is_success() {
+            let body = response.text().await.unwrap_or_default();
+
+            tracing::info!(
+                status = %status,
+                body = %body,
+                "discord get user fail"
             );
 
             anyhow::bail!("Discord authorization failed: {status}");

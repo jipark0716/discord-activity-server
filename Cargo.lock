@@ -11,7 +11,9 @@ dependencies = [
  "prost",
  "prost-build",
  "protoc-bin-vendored",
+ "room",
  "tokio",
+ "tokio-stream",
  "tonic",
  "tonic-prost",
  "tonic-prost-build",
@@ -1279,6 +1281,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "room"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "log",
+ "parking_lot",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1742,6 +1755,7 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
