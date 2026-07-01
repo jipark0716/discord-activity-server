@@ -1,48 +1,40 @@
+use std::sync::Arc;
 use tonic::{Request, Response, Status};
-use discord_auth::DiscordClient;
-use crate::config::Config;
+use room::RoomManager;
+use crate::ext::auth::AuthorizationExt;
+use crate::server::gateway::{GrpcSession};
 use crate::server::grpc::auth_service_server::AuthService;
-use crate::server::grpc::{AuthRequest, AuthResponse};
+use crate::server::grpc::{Event, Member, MemberCollection};
 
 pub(crate) struct AuthGrpcService {
-    discord_client: DiscordClient,
+    room_manager: Arc<RoomManager<GrpcSession, Event>>,
 }
 
 impl AuthGrpcService {
-    pub(crate) fn new(config: &Config) -> anyhow::Result<Self> {
-        let client = DiscordClient::new(
-            config.discord_client_id.clone(),
-            config.discord_secret_key.clone(),
-        )?;
-
-        Ok(Self {
-            discord_client: client,
-        })
+    pub fn new(room_manager: Arc<RoomManager<GrpcSession, Event>>) -> Self {
+        Self { room_manager }
     }
 }
 
 #[tonic::async_trait]
 impl AuthService for AuthGrpcService {
-    async fn get_token(
-        &self,
-        request: Request<AuthRequest>,
-    ) -> Result<Response<AuthResponse>, Status> {
-        let request = request.into_inner();
+    async fn get_members(&self, request: Request<()>) -> Result<Response<MemberCollection>, Status> {
+        let auth = request.get_authorized()?;
 
-        let token_response = self
-          .discord_client
-          .authorization(&request.code)
-          .await
-          .map_err(|_| {
-              Status::unavailable("fail to get discord token")
-          })?;
+        let room = self.room_manager.get(auth.instance_id)
+          .map_err(|_| Status::unavailable("not found instance"))?;;
 
-        Ok(Response::new(AuthResponse {
-            access_token: token_response.access_token,
-            token_type: token_response.token_type,
-            expires_in: token_response.expires_in,
-            refresh_token: token_response.refresh_token,
-            scope: token_response.scope,
+        let members: Vec<Member> = room.get_members()
+          .iter()
+          .map(|o| Member {
+              user_id: o.user.id,
+              username: o.user.username.clone(),
+              avatar: o.user.avatar.clone(),
+          })
+          .collect();
+
+        Ok(Response::from(MemberCollection {
+            members,
         }))
     }
 }

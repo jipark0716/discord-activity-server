@@ -6,11 +6,11 @@ fn main() -> anyhow::Result<()> {
 
     tonic_prost_build::configure().compile_with_config(
         config,
-        &["proto/auth.proto"],
+        &["proto/gateway.proto", "proto/auth.proto", "proto/message.proto"],
         &["proto"],
     )?;
 
-    println!("cargo:rerun-if-changed=proto/auth.proto");
+    println!("cargo:rerun-if-changed=proto/gateway.proto");
 
     Ok(())
 }
